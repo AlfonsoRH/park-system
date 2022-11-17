@@ -1,6 +1,6 @@
 #include <WiFi.h>
 
-#endif
+
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h> // Universal Telegram Bot Library written by Brian Lough: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot
 #include <ArduinoJson.h>
@@ -27,9 +27,16 @@ unsigned long lastTimeBotRan;
 
 String getReadings(){
    
-  NewPing sonar(35, 34, 200); 
+  NewPing sonar(23, 22, 200); 
 
-  String message = "Distancia: " + String(sonar.ping_cm()) + " cm \n";
+  int cont = 4;
+
+  if(sonar.ping_cm() < 30){
+    cont--;
+  }
+  
+
+  String message = "Lugares disponibles: " + String(cont);
   
   return message;
 }
@@ -56,15 +63,15 @@ void handleNewMessages(int numNewMessages) {
 
     if (text == "/start") {
       String welcome = "Welcome, " + from_name + ".\n";
-      welcome += "Use the following command to get current readings.\n\n";
-      welcome += "/readings \n";
+      welcome += "Commands:\n\n";
+      welcome += "/slots \n Get available slots";
       bot.sendMessage(chat_id, welcome, "");
     }
 
-    if (text == "/readings") {
+    if (text == "/slots") {
       String readings = getReadings();
       bot.sendMessage(chat_id, readings, "");
-    }  
+    } 
   }
 }
 
@@ -72,15 +79,23 @@ void setup() {
   // Connect to Wi-Fi
   Serial.begin(115200);
     delay(1000);
+      Serial.begin(9600);
+  Serial.print("Connecting to WiFi");
+  WiFi.begin("Wokwi-GUEST", "", 6);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println(" Connected!");
 
-    WiFi.mode(WIFI_STA); //Optional
+/*     WiFi.mode(WIFI_STA); //Optional
     WiFi.begin(ssid, password);
     Serial.println("\nConnecting");
 
     while(WiFi.status() != WL_CONNECTED){
         Serial.print(".");
         delay(100);
-    }
+    } */
 
     Serial.println("\nConnected to the WiFi network");
     Serial.print("Local ESP32 IP: ");
